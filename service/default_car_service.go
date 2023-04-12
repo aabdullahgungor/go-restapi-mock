@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/aabdullahgungor/go-restapi-mock/model"
 	"github.com/aabdullahgungor/go-restapi-mock/repository"
@@ -30,11 +29,6 @@ func (d *DefaultCarService) GetAll() ([]model.Car, error) {
 
 func (d *DefaultCarService) GetById(id string) (model.Car, error) {
 	
-	_ , err := strconv.Atoi(id)
-	if err != nil {
-		return model.Car{}, ErrIDIsNotValid
-	}
-
 	car, err := d.carRepo.GetCarById(id)
 
 	if err != nil {
@@ -72,13 +66,8 @@ func (d *DefaultCarService) Edit(car *model.Car) error {
 }
 
 func (d *DefaultCarService) Delete(id string) error {
-
-	_ , err := strconv.Atoi(id)
-	if err != nil {
-		return  ErrIDIsNotValid
-	}
 	
-	err = d.carRepo.DeleteCar(id)
+	err := d.carRepo.DeleteCar(id)
 
 	if err != nil {
 		return ErrCarNotFound
