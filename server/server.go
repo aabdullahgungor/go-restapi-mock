@@ -14,12 +14,13 @@ type Server struct {
 
 func NewServer() Server {
 	return Server{
-		port:   "5050",
+		port:   "9000",
 		server: gin.Default(),
 	}
 }
 
 func (s *Server) Run() {
+
 	router := router.ConfigRoutes(s.server)
 
 	log.Printf("Server running at port: %v", s.port)
