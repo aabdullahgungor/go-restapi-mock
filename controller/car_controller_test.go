@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,11 +27,14 @@ t.Run("Error", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.GetAllCars(ctx)
+
+	req, _ := http.NewRequest("GET", "api/v1/cars", nil)
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
-	t.Log(w.Body.String())
+	fmt.Println(w.Code)
 	})
 
 t.Run("Success", func(t *testing.T) {
@@ -41,12 +45,14 @@ t.Run("Success", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
-
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.GetAllCars(ctx)
+
+	req, _ := http.NewRequest("GET", "api/v1/cars", nil)
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	t.Log(w.Body.String())
+	fmt.Println(w.Code)
 	})
 }
 
@@ -61,11 +67,14 @@ t.Run("Error", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.GetCarById(ctx)
+
+	req, _ := http.NewRequest("GET", "api/v1/cars/:id", nil)
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
-	t.Log(w.Body.String())
+	fmt.Println(w.Code)
 	})
 
 t.Run("Success", func(t *testing.T) {
@@ -87,15 +96,19 @@ t.Run("Success", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.GetCarById(ctx)
+
+	req, _ := http.NewRequest("GET", "api/v1/cars/:id", nil)
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
+	fmt.Println(w.Code)
 
 	var responseData model.Car
 	json.NewDecoder(w.Body).Decode(&responseData)
 	assert.Equal(t, "bmw", responseData.Brand)
-	t.Log(w.Body.String())
+	t.Log("\nCar brand is: ", responseData.Brand)
 	})
 }
 
