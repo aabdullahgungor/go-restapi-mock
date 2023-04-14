@@ -88,7 +88,7 @@ func (cs *carController) EditCar(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, gin.H{"message":"Car has been edited","car_id": car.Id})
+	c.IndentedJSON(http.StatusAccepted, gin.H{"message":"Car has been edited","car_id": car.Id})
 }		
 
 func (cs *carController) DeleteCar(c *gin.Context) { 

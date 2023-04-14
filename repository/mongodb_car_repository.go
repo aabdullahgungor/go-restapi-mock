@@ -53,7 +53,7 @@ func (m *MongoDbCarRepository) GetAllCars() ([]model.Car, error) {
         panic(err)
 	}
 	
-	return cars, err
+	return cars, nil
 }
 
 func (m *MongoDbCarRepository) GetCarById(id string) (model.Car, error) { 
