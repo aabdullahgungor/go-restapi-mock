@@ -46,9 +46,8 @@ func (cs *carController) GetCarById(c *gin.Context) {
 }
 
 func (cs *carController) CreateCar(c *gin.Context) { 
-	var car model.Car
-	err := c.ShouldBindJSON(&car)
-
+	car := model.Car{}
+	err := c.BindJSON(&car)
 	if err != nil {
 		c.IndentedJSON(400, gin.H{
 			"error": "cannot bind JSON: " + err.Error(),
@@ -88,7 +87,7 @@ func (cs *carController) EditCar(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusAccepted, gin.H{"message":"Car has been edited","car_id": car.Id})
+	c.IndentedJSON(http.StatusOK, gin.H{"message":"Car has been edited","car_id": car.Id})
 }		
 
 func (cs *carController) DeleteCar(c *gin.Context) { 

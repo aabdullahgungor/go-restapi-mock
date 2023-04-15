@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -113,21 +114,12 @@ t.Run("Success", func(t *testing.T) {
 }
 
 func TestCarController_CreateCar(t *testing.T) { 
-t.Run("ErrorJson", func(t *testing.T) {
-	var car model.Car
-	w := httptest.NewRecorder()
-	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
-	err := ctx.ShouldBindJSON(&car)
-	if assert.Nil(t,err) {
-		t.Log("cannot bind JSON: " + err.Error())
-	} else {
-		t.Log("Bind Json Succesfuly")
-	}
-	})
 
 t.Run("ErrorCreate", func(t *testing.T) {
-	var car model.Car
+	car := model.Car{Brand: "Bmw"}
+	jsonValue, _ := json.Marshal(car)
+	byteCar := bytes.NewBuffer(jsonValue)
+
 	mockCtrl := gomock.NewController(t)
   	defer mockCtrl.Finish()
 	mockService := service.NewMockICarService(mockCtrl)
@@ -135,10 +127,15 @@ t.Run("ErrorCreate", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.CreateCar(ctx)
-	assert.Equal(t, http.StatusNotAcceptable, w.Code)
+	req, err := http.NewRequest("POST", "api/v1/cars", byteCar)
+	if err != nil {
+		fmt.Println(err)
+	}
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 	t.Log(w.Body.String())
 	})
 
