@@ -47,14 +47,13 @@ func (cs *carController) GetCarById(c *gin.Context) {
 
 func (cs *carController) CreateCar(c *gin.Context) { 
 	car := model.Car{}
-	err := c.BindJSON(&car)
+	err := c.ShouldBindJSON(&car)
 	if err != nil {
 		c.IndentedJSON(400, gin.H{
 			"error": "cannot bind JSON: " + err.Error(),
 		})
 		return
 	}
-
 	err = cs.service.Create(&car)
 
 	if err != nil {

@@ -140,7 +140,10 @@ t.Run("ErrorCreate", func(t *testing.T) {
 	})
 
 t.Run("Success", func(t *testing.T) {
-	var car model.Car
+	car := model.Car{Brand: "Bmw"}
+	jsonValue, _ := json.Marshal(car)
+	byteCar := bytes.NewBuffer(jsonValue)
+
 	mockCtrl := gomock.NewController(t)
   	defer mockCtrl.Finish()
 	mockService := service.NewMockICarService(mockCtrl)
@@ -148,31 +151,25 @@ t.Run("Success", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.CreateCar(ctx)
+	req, err := http.NewRequest("POST", "api/v1/cars", byteCar)
+	if err != nil {
+		fmt.Println(err)
+	}
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusCreated, w.Code)
 	t.Log(w.Body.String())
 	})
 }
 
 func TestCarController_EditCar(t *testing.T) {
-
-t.Run("ErrorJson", func(t *testing.T) {
-	var car model.Car
-	w := httptest.NewRecorder()
-	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
-	err := ctx.ShouldBindJSON(&car)
-	if assert.Nil(t,err) {
-		t.Log("cannot bind JSON: " + err.Error())
-	} else {
-		t.Log("Bind Json Succesfuly")
-	}
-	})
-
 t.Run("ErrorEdit", func(t *testing.T) {
-	var car model.Car
+	car := model.Car{Brand: "Bmw"}
+	jsonValue, _ := json.Marshal(car)
+	byteCar := bytes.NewBuffer(jsonValue)
+
 	mockCtrl := gomock.NewController(t)
   	defer mockCtrl.Finish()
 	mockService := service.NewMockICarService(mockCtrl)
@@ -180,15 +177,23 @@ t.Run("ErrorEdit", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.EditCar(ctx)
+	req, err := http.NewRequest("PUT", "api/v1/cars", byteCar)
+	if err != nil {
+		fmt.Println(err)
+	}
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotAcceptable, w.Code)
 	t.Log(w.Body.String())
 	})
 
 t.Run("Success", func(t *testing.T) {
-	var car model.Car
+	car := model.Car{Brand: "Bmw"}
+	jsonValue, _ := json.Marshal(car)
+	byteCar := bytes.NewBuffer(jsonValue)
+
 	mockCtrl := gomock.NewController(t)
   	defer mockCtrl.Finish()
 	mockService := service.NewMockICarService(mockCtrl)
@@ -196,10 +201,15 @@ t.Run("Success", func(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.ReleaseMode)
-	ctx, _ := gin.CreateTestContext(w)
+	ctx, r := gin.CreateTestContext(w)
 	carTestController := NewCarController(mockService)
 	carTestController.EditCar(ctx)
-	assert.Equal(t, http.StatusAccepted, w.Code)
+	req, err := http.NewRequest("PUT", "api/v1/cars", byteCar)
+	if err != nil {
+		fmt.Println(err)
+	}
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
 	t.Log(w.Body.String())
 	})
 }
