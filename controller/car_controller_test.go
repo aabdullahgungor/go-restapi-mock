@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -25,14 +27,18 @@ func TestCarController_GetAllCars(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().GetAll().Return([]model.Car{}, errors.New("hata!")).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "GET"
+		ctx.Request.Header.Set("Content-Type", "application/json")
 		carTestController := NewCarController(mockService)
 		carTestController.GetAllCars(ctx)
 
-		req, _ := http.NewRequest("GET", "api/v1/cars", nil)
-		r.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusNotFound, w.Code)
 		fmt.Println(w.Code)
 	})
@@ -43,14 +49,18 @@ func TestCarController_GetAllCars(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().GetAll().Return([]model.Car{}, nil).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "GET"
+		ctx.Request.Header.Set("Content-Type", "application/json")
 		carTestController := NewCarController(mockService)
 		carTestController.GetAllCars(ctx)
 
-		req, _ := http.NewRequest("GET", "api/v1/cars", nil)
-		r.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusOK, w.Code)
 		fmt.Println(w.Code)
 	})
@@ -59,26 +69,37 @@ func TestCarController_GetAllCars(t *testing.T) {
 func TestCarController_GetCarById(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
-		var id string
+		id := "1"
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().GetById(id).Return(model.Car{}, service.ErrCarNotFound).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "GET"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		params := []gin.Param{
+			{
+				Key:   "id",
+				Value: "1",
+			},
+		}
+		ctx.Params = params
 		carTestController := NewCarController(mockService)
 		carTestController.GetCarById(ctx)
 
-		req, _ := http.NewRequest("GET", "api/v1/cars/:id", nil)
-		r.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusNotFound, w.Code)
 		fmt.Println(w.Code)
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		var id string
+		id := "1"
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockService := service.NewMockICarService(mockCtrl)
@@ -94,14 +115,25 @@ func TestCarController_GetCarById(t *testing.T) {
 			Price:     10000,
 		}, nil).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "GET"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		params := []gin.Param{
+			{
+				Key:   "id",
+				Value: "1",
+			},
+		}
+		ctx.Params = params
 		carTestController := NewCarController(mockService)
 		carTestController.GetCarById(ctx)
 
-		req, _ := http.NewRequest("GET", "api/v1/cars/:id", nil)
-		r.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusOK, w.Code)
 		fmt.Println(w.Code)
 
@@ -124,17 +156,20 @@ func TestCarController_CreateCar(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Create(&car).Return(errors.New("hata")).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "POST"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		ctx.Request.Body = io.NopCloser(byteCar)
 		carTestController := NewCarController(mockService)
 		carTestController.CreateCar(ctx)
-		req, err := http.NewRequest("POST", "api/v1/cars", byteCar)
-		if err != nil {
-			fmt.Println(err)
-		}
-		r.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		assert.Equal(t, http.StatusNotAcceptable, w.Code)
 		t.Log(w.Body.String())
 	})
 
@@ -148,16 +183,19 @@ func TestCarController_CreateCar(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Create(&car).Return(nil).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "POST"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		ctx.Request.Body = io.NopCloser(byteCar)
 		carTestController := NewCarController(mockService)
 		carTestController.CreateCar(ctx)
-		req, err := http.NewRequest("POST", "api/v1/cars", byteCar)
-		if err != nil {
-			fmt.Println(err)
-		}
-		r.ServeHTTP(w, req)
+
 		assert.Equal(t, http.StatusCreated, w.Code)
 		t.Log(w.Body.String())
 	})
@@ -174,16 +212,19 @@ func TestCarController_EditCar(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Edit(&car).Return(errors.New("hata")).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "POST"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		ctx.Request.Body = io.NopCloser(byteCar)
 		carTestController := NewCarController(mockService)
 		carTestController.EditCar(ctx)
-		req, err := http.NewRequest("PUT", "api/v1/cars", byteCar)
-		if err != nil {
-			fmt.Println(err)
-		}
-		r.ServeHTTP(w, req)
+
 		assert.Equal(t, http.StatusNotAcceptable, w.Code)
 		t.Log(w.Body.String())
 	})
@@ -198,16 +239,19 @@ func TestCarController_EditCar(t *testing.T) {
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Edit(&car).Return(nil).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
-		ctx, r := gin.CreateTestContext(w)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "PUT"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		ctx.Request.Body = io.NopCloser(byteCar)
 		carTestController := NewCarController(mockService)
 		carTestController.EditCar(ctx)
-		req, err := http.NewRequest("PUT", "api/v1/cars", byteCar)
-		if err != nil {
-			fmt.Println(err)
-		}
-		r.ServeHTTP(w, req)
+
 		assert.Equal(t, http.StatusOK, w.Code)
 		t.Log(w.Body.String())
 	})
@@ -216,33 +260,61 @@ func TestCarController_EditCar(t *testing.T) {
 func TestCarController_DeleteCar(t *testing.T) {
 
 	t.Run("Error", func(t *testing.T) {
-		var id string
+		id := "1"
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Delete(id).Return(service.ErrCarNotFound).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
 		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "DELETE"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		params := []gin.Param{
+			{
+				Key:   "id",
+				Value: "1",
+			},
+		}
+		ctx.Params = params
 		carTestController := NewCarController(mockService)
 		carTestController.DeleteCar(ctx)
+
 		assert.Equal(t, http.StatusNotFound, w.Code)
 		t.Log(w.Body.String())
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		var id string
+		id := "1"
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 		mockService := service.NewMockICarService(mockCtrl)
 		mockService.EXPECT().Delete(id).Return(nil).AnyTimes()
 
+		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
-		gin.SetMode(gin.ReleaseMode)
 		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+			URL:    &url.URL{},
+		}
+		ctx.Request.Method = "DELETE"
+		ctx.Request.Header.Set("Content-Type", "application/json")
+		params := []gin.Param{
+			{
+				Key:   "id",
+				Value: "1",
+			},
+		}
+		ctx.Params = params
 		carTestController := NewCarController(mockService)
 		carTestController.DeleteCar(ctx)
+
 		assert.Equal(t, http.StatusAccepted, w.Code)
 		t.Log(w.Body.String())
 	})
