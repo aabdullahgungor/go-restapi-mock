@@ -9,8 +9,8 @@ import (
 
 var (
 	ErrIDIsNotValid    = errors.New("id is not valid")
-	ErrBrandIsNotEmpty = errors.New("Brand is not empty")
-	ErrCarNotFound = errors.New("Car cannot be found")
+	ErrBrandIsNotEmpty = errors.New("brand is not empty")
+	ErrCarNotFound     = errors.New("car cannot be found")
 )
 
 type DefaultCarService struct {
@@ -24,11 +24,11 @@ func NewDefaultCarService(cRepo repository.ICarRepository) *DefaultCarService {
 }
 
 func (d *DefaultCarService) GetAll() ([]model.Car, error) {
-	return d.carRepo.GetAllCars()	
+	return d.carRepo.GetAllCars()
 }
 
 func (d *DefaultCarService) GetById(id string) (model.Car, error) {
-	
+
 	car, err := d.carRepo.GetCarById(id)
 
 	if err != nil {
@@ -48,9 +48,9 @@ func (d *DefaultCarService) Create(car *model.Car) error {
 }
 
 func (d *DefaultCarService) Edit(car *model.Car) error {
-	
+
 	if car.Id.String() == "" {
-		return  ErrIDIsNotValid
+		return ErrIDIsNotValid
 	}
 	if car.Brand == "" {
 		return ErrBrandIsNotEmpty
@@ -59,14 +59,14 @@ func (d *DefaultCarService) Edit(car *model.Car) error {
 	err := d.carRepo.EditCar(car)
 
 	if err != nil {
-		return  ErrCarNotFound
+		return ErrCarNotFound
 	}
 
 	return nil
 }
 
 func (d *DefaultCarService) Delete(id string) error {
-	
+
 	err := d.carRepo.DeleteCar(id)
 
 	if err != nil {
